@@ -12,16 +12,18 @@ class NeoPixelController:
         self.running = False
         self.mode_thread = None
         
-    def mode_1_rainbow_cycle(self, delay=0.1):
-        """모드 1: 무지개 색상 사이클"""
+    def mode_1_rainbow_cycle(self, delay=0.5):
+        """모드 1: 무지개 색상 사이클 (GRB 순서)"""
         colors = [
-            (255, 0, 0),      # Red
-            (255, 127, 0),    # Orange
+            (0, 255, 0),      # Red (GRB: G=0, R=255, B=0)
+            (255, 0, 0),      # Red (GRB: G=0, R=255, B=0)
+            (0, 0, 255),      # Red (GRB: G=0, R=255, B=0)
+            """(94, 255, 0),    # Orange
             (255, 255, 0),    # Yellow
-            (0, 255, 0),      # Green
-            (0, 0, 255),      # Blue
+            (255, 0, 0),      # Green (GRB: G=255, R=0, B=0)
+            (0, 0, 255),      # Blue (GRB: G=0, R=0, B=255)
             (75, 0, 130),     # Indigo
-            (148, 0, 211)     # Violet
+            (148, 0, 211)     # Violet"""
         ]
         while self.running:
             for color in colors:
@@ -32,22 +34,21 @@ class NeoPixelController:
                 time.sleep(delay)
     
     def mode_2_chase(self, delay=0.05):
-        """모드 2: 추적 효과 (LED가 하나씩 따라가는 효과)"""
+        """모드 2: 추적 효과 (LED가 하나씩 따라가는 효과) (GRB 순서)"""
         while self.running:
             for i in range(self.num_leds):
                 if not self.running:
                     break
                 # 모든 LED 끄기
-                self.neo.fill_strip(0, 0, 0)
-                # 현재 LED 켜기
-                if i > 0:
-                    self.neo.set_pixel(i-1, 0, 0, 0)
-                self.neo.set_pixel(i, 0, 255, 255)  # 청록색
+                self.neo.clear_strip()
+                # 현재 LED 켜기 (청록색: GRB 순서)
+                # set_led_color(index, red, green, blue) - fill_strip과 동일하게 GRB 순서로 동작 (파라미터 이름은 RGB지만 실제로는 GRB)
+                self.neo.set_led_color(i, 0, 255, 0)  # 청록색 (GRB: G=255, R=0, B=255)
                 self.neo.update_strip()
                 time.sleep(delay)
     
     def mode_3_fade(self, delay=0.02):
-        """모드 3: 페이드 인/아웃 효과"""
+        """모드 3: 페이드 인/아웃 효과 (GRB 순서)"""
         brightness = 0
         direction = 1
         while self.running:
@@ -59,11 +60,12 @@ class NeoPixelController:
                 brightness = 0
                 direction = 1
             
-            r = int(brightness)
-            g = int(brightness * 0.5)
-            b = int(brightness * 0.8)
+            # GRB 순서로 변환 (RGB에서 GRB로)
+            g = int(brightness * 0.5)  # Green
+            r = int(brightness)         # Red
+            b = int(brightness * 0.8)   # Blue
             
-            self.neo.fill_strip(r, g, b)
+            self.neo.fill_strip(g, r, b)  # GRB 순서
             self.neo.update_strip()
             time.sleep(delay)
     
